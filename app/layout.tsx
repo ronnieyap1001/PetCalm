@@ -4,6 +4,8 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import SignOutButton from "@/components/SignOutButton";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "PetCalm — Pet Anxiety Assessment",
   description:
@@ -21,10 +23,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = createSupabaseServerClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // If Supabase is unreachable or misconfigured, render the page anonymously
+    // rather than 500ing the whole site.
+    user = null;
+  }
 
   return (
     <html lang="en">
